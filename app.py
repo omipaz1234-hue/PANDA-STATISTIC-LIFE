@@ -1,192 +1,269 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 
-st.set_page_config(page_title="PANDA STATISTIC LIFE", page_icon="🐼", layout="wide")
+# ==========================================================
+# CONFIGURACIÓN DE LA PÁGINA
+# ==========================================================
 
-# ==================== HEADER ====================
-col1, col2 = st.columns([1, 5])
-with col1:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Panda_Logo.svg/512px-Panda_Logo.svg.png", width=160)
-with col2:
-    st.markdown("# 🐼 PANDA STATISTIC LIFE")
-    st.markdown("### Estadística Descriptiva y Bioestadística para Salud Pública - Bolivia")
-    st.caption("Optimizado para reportes del SNIS - Ministerio de Salud")
+st.set_page_config(
+    page_title="🐼 PANDA STATISTIC LIFE",
+    page_icon="🐼",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# ==================== CARGA DE DATOS ====================
-with st.sidebar:
-    st.header("📁 Cargar Reporte SNIS")
-    uploaded_file = st.file_uploader("Sube tu archivo Excel del SNIS", type=["xlsx", "xls", "csv"])
-    
-    if uploaded_file:
-        try:
-            # Lectura especial para archivos sucios del SNIS
-            df_raw = pd.read_excel(uploaded_file, header=None)
-            
-            # Buscar fila de inicio de datos
-            start_row = 0
-            for i in range(min(30, len(df_raw))):
-                if df_raw.iloc[i].astype(str).str.contains('TOTAL_GRAL|LA PAZ|SEDES', case=False, na=False).any():
-                    start_row = i
-                    break
-            
-            df = pd.read_excel(uploaded_file, skiprows=start_row)
-            df = df.dropna(axis=1, how='all').dropna(axis=0, how='all')
-            
-            # Convertir columnas a numéricas
-            for col in df.columns:
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.').str.strip(), errors='coerce')
-            
-            st.success(f"✅ Datos SNIS cargados: {df.shape[0]} filas, {df.shape[1]} columnas")
-            st.dataframe(df.head(10), use_container_width=True)
-            st.session_state.df = df
-        except Exception as e:
-            st.error(f"Error al leer archivo: {e}")
+# ==========================================================
+# ESTILOS CSS
+# ==========================================================
 
-    if st.button("📊 Usar Datos de Ejemplo"):
-        df = pd.DataFrame({
-            'Grupo_Edad': ['<6m', '6m-1a', '1-4a', '5-9a', '10-14a', '15-19a'],
-            'Casos': [8312, 4351, 14802, 13004, 11262, 11040]
-        })
-        st.session_state.df = df
-        st.success("Datos de ejemplo cargados")
+st.markdown("""
+<style>
 
-df = st.session_state.get('df', None)
+.main {
+    background-color: #f5f7fa;
+}
 
-# ==================== TABS ====================
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Descriptiva", "📈 Frecuencias", "📉 Visualización", 
-    "🦠 Bioestadística", "🏥 Indicadores", "📉 Canal Endémico"
-])
+h1 {
+    color: #0B5394;
+    font-weight: 800;
+}
 
-# ====================== 1. DESCRIPTIVA ======================
-with tab1:
-    st.header("1. Estadística Descriptiva")
-    if df is not None:
-        numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
-        if numeric_cols:
-            col = st.selectbox("Selecciona columna numérica", numeric_cols)
-            data = df[col].dropna()
-            
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("Media", f"{data.mean():.2f}")
-                st.metric("Mediana", f"{data.median():.2f}")
-            with c2:
-                st.metric("Desv. Estándar", f"{data.std():.2f}")
-                st.metric("Mínimo", f"{data.min():.2f}")
-            with c3:
-                st.metric("Máximo", f"{data.max():.2f}")
-                st.metric("Coef. Variación", f"{(data.std()/data.mean()*100 if data.mean() != 0 else 0):.1f}%")
-            
-            fig = px.box(df, y=col, title=f"Diagrama de Caja - {col}")
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.warning("No se encontraron columnas numéricas")
-    else:
-        st.info("Carga tu archivo SNIS")
+h2 {
+    color: #1B5E20;
+}
 
-# ====================== 2. FRECUENCIAS ======================
-with tab2:
-    st.header("2. Tablas de Frecuencia")
-    if df is not None:
-        col = st.selectbox("Selecciona una columna", df.columns, key="freq_tab")
-        freq = df[col].value_counts().reset_index()
-        freq.columns = ['Valor', 'Frecuencia Absoluta']
-        freq['Frecuencia Relativa (%)'] = (freq['Frecuencia Absoluta'] / freq['Frecuencia Absoluta'].sum() * 100).round(2)
-        st.dataframe(freq, use_container_width=True)
+h3 {
+    color: #1565C0;
+}
 
-# ====================== 3. VISUALIZACIÓN ======================
-with tab3:
-    st.header("3. Visualización de Datos")
-    if df is not None:
-        numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
-        if numeric_cols:
-            col_x = st.selectbox("Variable categórica (X)", df.columns, key="viz_x")
-            col_y = st.selectbox("Variable numérica (Y)", numeric_cols, key="viz_y")
-            
-            fig1 = px.bar(df, x=col_x, y=col_y, title=f"{col_y} por {col_x}")
-            st.plotly_chart(fig1, use_container_width=True)
-            
-            fig2 = px.pie(df, names=col_x, values=col_y, title="Gráfico Circular")
-            st.plotly_chart(fig2, use_container_width=True)
+section[data-testid="stSidebar"]{
+    background-color:#EAF4FF;
+}
 
-# ====================== 4. BIOESTADÍSTICA ======================
-with tab4:
-    st.header("4. Bioestadística y Epidemiología")
-    st.subheader("Tabla 2×2 y Medidas de Asociación")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        a = st.number_input("a = Enfermo + Expuesto", value=45, min_value=0)
-        c = st.number_input("c = Enfermo + No Expuesto", value=25, min_value=0)
-    with col2:
-        b = st.number_input("b = Sano + Expuesto", value=120, min_value=0)
-        d = st.number_input("d = Sano + No Expuesto", value=210, min_value=0)
-    
-    if st.button("Calcular RR y OR"):
-        rr = (a / (a + b)) / (c / (c + d)) if (c + d) > 0 else 0
-        or_val = (a * d) / (b * c) if (b * c) > 0 else 0
-        
-        st.success("**Resultados**")
-        st.metric("Riesgo Relativo (RR)", f"{rr:.2f}")
-        st.metric("Odds Ratio (OR)", f"{or_val:.2f}")
-        
-        tabla = pd.DataFrame([[a, b], [c, d]], 
-                           index=["Enfermo", "No Enfermo"], 
-                           columns=["Expuesto", "No Expuesto"])
-        st.dataframe(tabla)
+div.stButton > button{
+    background-color:#1565C0;
+    color:white;
+    border-radius:10px;
+    border:none;
+    padding:0.5rem 1rem;
+    font-weight:bold;
+}
 
-# ====================== 5. INDICADORES ======================
-with tab5:
-    st.header("5. Indicadores de Salud")
-    if df is not None:
-        numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
-        if numeric_cols:
-            col_casos = st.selectbox("Columna de Casos", numeric_cols, key="ind_casos")
-            poblacion = st.number_input("Población total", value=1000000, min_value=1000)
-            
-            casos_total = df[col_casos].sum()
-            
-            incidencia = (casos_total / poblacion) * 100000
-            prevalencia = (casos_total / poblacion) * 100
-            
-            c1, c2, c3 = st.columns(3)
-            with c1: st.metric("Incidencia (x 100,000 hab)", f"{incidencia:.2f}")
-            with c2: st.metric("Prevalencia (%)", f"{prevalencia:.2f}")
-            with c3: st.metric("Total Casos", int(casos_total))
-    else:
-        st.info("Carga datos para calcular indicadores")
+div.stButton > button:hover{
+    background-color:#0D47A1;
+}
 
-# ====================== 6. CANAL ENDÉMICO ======================
-with tab6:
-    st.header("6. Canal Endémico")
-    if df is not None:
-        numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
-        if numeric_cols:
-            caso_col = st.selectbox("Selecciona columna de Casos", numeric_cols, key="canal_col")
-            casos = df[caso_col].dropna()
-            media = casos.mean()
-            de = casos.std()
-            
-            st.success(f"**Columna usada:** {caso_col} | Media: {media:.2f} | DE: {de:.2f}")
-            
-            fig = go.Figure()
-            fig.add_hrect(0, max(0, media-de), fillcolor="green", opacity=0.2, annotation_text="🟢 ÉXITO / SEGURIDAD")
-            fig.add_hrect(max(0, media-de), media+de, fillcolor="lightblue", opacity=0.2, annotation_text="🔵 NORMAL")
-            fig.add_hrect(media+de, media+2*de, fillcolor="orange", opacity=0.25, annotation_text="🟠 ALARMA")
-            fig.add_hrect(media+2*de, casos.max()*1.2, fillcolor="red", opacity=0.25, annotation_text="🔴 EPIDEMIA")
-            
-            fig.add_trace(go.Scatter(x=df.index, y=casos, mode='lines+markers', name='Casos', line=dict(color='#1E88E5', width=3)))
-            fig.add_trace(go.Scatter(x=df.index, y=[media]*len(df), mode='lines', name='Media', line=dict(color='black', dash='dash')))
-            
-            fig.update_layout(title="Canal Endémico - Vigilancia SNIS Bolivia", height=650)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.warning("No hay columnas numéricas")
-    else:
-        st.info("Carga tu archivo SNIS")
+div[data-testid="stMetric"]{
+    background-color:white;
+    border-radius:10px;
+    padding:10px;
+    border:1px solid #D9D9D9;
+}
 
-st.caption("🐼 PANDA STATISTIC LIFE © 2026 - Desarrollado para Bolivia")
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================================
+# HEADER
+# ==========================================================
+
+st.title("🐼 PANDA STATISTIC LIFE")
+st.subheader(
+    "Plataforma de Estadística, Bioestadística, Epidemiología y Demografía"
+)
+
+st.markdown(
+"""
+Bienvenido a **PANDA STATISTIC LIFE**.
+
+Esta plataforma está diseñada para apoyar el análisis de datos en:
+
+- 📊 Estadística descriptiva
+- 📈 Tablas de frecuencia
+- 📉 Visualización de datos
+- 🦠 Bioestadística
+- 🏥 Indicadores de salud
+- 👥 Demografía
+- 📉 Canal endémico
+- 🇧🇴 Importación de reportes SNIS
+"""
+)
+
+# ==========================================================
+# SIDEBAR
+# ==========================================================
+
+st.sidebar.image(
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Panda_Logo.svg/512px-Panda_Logo.svg.png",
+    width=150
+)
+
+st.sidebar.title("🐼 MENÚ")
+
+pagina = st.sidebar.radio(
+    "Seleccione un módulo",
+    [
+        "🏠 Inicio",
+        "📥 Importar datos",
+        "📊 Estadística descriptiva",
+        "📈 Tablas de frecuencia",
+        "📉 Visualización",
+        "🦠 Bioestadística",
+        "🏥 Indicadores de salud",
+        "👥 Demografía",
+        "📉 Canal endémico",
+        "📄 Exportar resultados",
+        "ℹ️ Acerca de"
+    ]
+)
+
+# ==========================================================
+# PÁGINAS
+# ==========================================================
+
+if pagina == "🏠 Inicio":
+
+    st.success("Bienvenido a PANDA STATISTIC LIFE")
+
+    st.info(
+        """
+        Utiliza el menú lateral para acceder a los distintos módulos.
+
+        Próximamente:
+        - Importación automática de reportes SNIS.
+        - Pirámides poblacionales.
+        - Estadística inferencial.
+        - Exportación de reportes.
+        """
+    )
+
+elif pagina == "📥 Importar datos":
+
+    st.header("📥 Importación de datos")
+
+    archivo = st.file_uploader(
+        "Seleccione un archivo",
+        type=["xls", "xlsx", "csv"]
+    )
+
+    st.checkbox(
+        "🇧🇴 Detectar automáticamente formato SNIS",
+        value=True
+    )
+
+    st.checkbox(
+        "Eliminar filas vacías",
+        value=True
+    )
+
+    st.checkbox(
+        "Eliminar columnas vacías",
+        value=True
+    )
+
+    st.checkbox(
+        "Conservar variables categóricas",
+        value=True
+    )
+
+    if archivo is not None:
+        st.success("Archivo cargado correctamente.")
+        st.write("Nombre:", archivo.name)
+
+elif pagina == "📊 Estadística descriptiva":
+
+    st.header("📊 Estadística descriptiva")
+
+    st.warning(
+        "Este módulo se implementará en una siguiente versión."
+    )
+
+elif pagina == "📈 Tablas de frecuencia":
+
+    st.header("📈 Tablas de frecuencia")
+
+    st.warning(
+        "Este módulo se implementará en una siguiente versión."
+    )
+
+elif pagina == "📉 Visualización":
+
+    st.header("📉 Visualización")
+
+    st.warning(
+        "Este módulo se implementará en una siguiente versión."
+    )
+
+elif pagina == "🦠 Bioestadística":
+
+    st.header("🦠 Bioestadística")
+
+    st.write("Incluye cálculos como RR, OR y tablas 2×2.")
+
+elif pagina == "🏥 Indicadores de salud":
+
+    st.header("🏥 Indicadores de salud")
+
+    st.write(
+        "Incidencia, prevalencia, mortalidad y otros indicadores."
+    )
+
+elif pagina == "👥 Demografía":
+
+    st.header("👥 Demografía")
+
+    st.markdown("""
+### Funcionalidades previstas
+
+- Pirámide poblacional.
+- Distribución por edad.
+- Distribución por sexo.
+- Razón de masculinidad.
+- Índice de dependencia.
+- Índice de envejecimiento.
+- Indicadores demográficos.
+""")
+
+elif pagina == "📉 Canal endémico":
+
+    st.header("📉 Canal endémico")
+
+    st.write(
+        "Visualización de zonas de seguridad, normalidad, alarma y epidemia."
+    )
+
+elif pagina == "📄 Exportar resultados":
+
+    st.header("📄 Exportación")
+
+    st.write(
+        "Permite exportar tablas, gráficos e informes."
+    )
+
+elif pagina == "ℹ️ Acerca de":
+
+    st.header("ℹ️ Acerca del proyecto")
+
+    st.markdown("""
+**PANDA STATISTIC LIFE**
+
+Aplicación desarrollada para apoyar la enseñanza, investigación y análisis de datos en salud pública.
+
+Incluye herramientas de:
+
+- Estadística descriptiva.
+- Bioestadística.
+- Epidemiología.
+- Demografía.
+- Vigilancia epidemiológica.
+- Procesamiento de datos del SNIS Bolivia.
+""")
+
+# ==========================================================
+# FOOTER
+# ==========================================================
+
+st.markdown("---")
+
+st.caption(
+    "🐼 PANDA STATISTIC LIFE © 2026 | Desarrollado por Omar Paz"
+)
