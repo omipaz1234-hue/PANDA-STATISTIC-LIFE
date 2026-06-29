@@ -1,269 +1,224 @@
 import streamlit as st
 
-# ==========================================================
-# CONFIGURACIÓN DE LA PÁGINA
-# ==========================================================
+# ============================
+# CONFIGURACIÓN
+# ============================
 
 st.set_page_config(
-    page_title="🐼 PANDA STATISTIC LIFE",
+    page_title="PANDA STATISTIC LIFE",
     page_icon="🐼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ==========================================================
-# ESTILOS CSS
-# ==========================================================
+# ============================
+# IMPORTAR MÓDULOS
+# ============================
+
+from modules import importar
+from modules import descriptiva
+from modules import frecuencias
+from modules import visualizacion
+from modules import bioestadistica
+from modules import indicadores
+from modules import demografia
+from modules import canal_endemico
+from modules import exportar
+
+# ============================
+# CSS PERSONALIZADO
+# ============================
 
 st.markdown("""
 <style>
 
-.main {
-    background-color: #f5f7fa;
+/* Fondo */
+
+.stApp{
+    background-color:#F4F7FC;
 }
 
-h1 {
-    color: #0B5394;
-    font-weight: 800;
-}
-
-h2 {
-    color: #1B5E20;
-}
-
-h3 {
-    color: #1565C0;
-}
+/* Sidebar */
 
 section[data-testid="stSidebar"]{
-    background-color:#EAF4FF;
+    background:linear-gradient(180deg,#4F46E5,#6366F1);
 }
 
-div.stButton > button{
-    background-color:#1565C0;
+/* Títulos Sidebar */
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] div{
+    color:white;
+}
+
+/* Botones */
+
+.stButton>button{
+    background:#4F46E5;
     color:white;
     border-radius:10px;
     border:none;
-    padding:0.5rem 1rem;
-    font-weight:bold;
 }
 
-div.stButton > button:hover{
-    background-color:#0D47A1;
+.stButton>button:hover{
+
+    background:#312E81;
+
 }
 
-div[data-testid="stMetric"]{
-    background-color:white;
+/* Métricas */
+
+div[data-testid="metric-container"]{
+
+    background:white;
+
+    border-radius:15px;
+
+    padding:15px;
+
+    box-shadow:0px 2px 10px rgba(0,0,0,0.1);
+
+}
+
+/* Dataframe */
+
+[data-testid="stDataFrame"]{
+
     border-radius:10px;
-    padding:10px;
-    border:1px solid #D9D9D9;
+
 }
 
 </style>
+
 """, unsafe_allow_html=True)
 
-# ==========================================================
-# HEADER
-# ==========================================================
+# ============================
+# SIDEBAR
+# ============================
 
-st.title("🐼 PANDA STATISTIC LIFE")
-st.subheader(
-    "Plataforma de Estadística, Bioestadística, Epidemiología y Demografía"
-)
+with st.sidebar:
 
-st.markdown(
-"""
+    st.image(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Panda_Logo.svg/512px-Panda_Logo.svg.png",
+        width=120
+    )
+
+    st.title("🐼 PANDA")
+
+    st.caption("STATISTIC LIFE")
+
+    st.divider()
+
+    menu = st.radio(
+
+        "Menú Principal",
+
+        [
+
+            "🏠 Inicio",
+
+            "📥 Importar Datos",
+
+            "📊 Estadística Descriptiva",
+
+            "📈 Frecuencias",
+
+            "📉 Visualización",
+
+            "🦠 Bioestadística",
+
+            "🏥 Indicadores",
+
+            "👥 Demografía",
+
+            "📉 Canal Endémico",
+
+            "📄 Exportar"
+
+        ]
+
+    )
+
+    st.divider()
+
+    st.success("🇧🇴 Bolivia")
+
+    st.caption("Versión 1.0")
+
+    st.caption("PANDA STATISTIC LIFE")
+
+# ============================
+# PÁGINAS
+# ============================
+
+if menu=="🏠 Inicio":
+
+    st.title("🐼 PANDA STATISTIC LIFE")
+
+    st.subheader("Plataforma Boliviana de Estadística y Vigilancia Epidemiológica")
+
+    st.markdown("---")
+
+    c1,c2,c3=st.columns(3)
+
+    with c1:
+
+        st.metric("Versión","1.0")
+
+    with c2:
+
+        st.metric("País","Bolivia")
+
+    with c3:
+
+        st.metric("Estado","Activo")
+
+    st.markdown("---")
+
+    st.info("""
 Bienvenido a **PANDA STATISTIC LIFE**.
 
-Esta plataforma está diseñada para apoyar el análisis de datos en:
+Esta plataforma está orientada al análisis estadístico y epidemiológico
+para apoyar la toma de decisiones en Salud Pública de Bolivia.
 
-- 📊 Estadística descriptiva
-- 📈 Tablas de frecuencia
-- 📉 Visualización de datos
-- 🦠 Bioestadística
-- 🏥 Indicadores de salud
-- 👥 Demografía
-- 📉 Canal endémico
-- 🇧🇴 Importación de reportes SNIS
-"""
-)
-
-# ==========================================================
-# SIDEBAR
-# ==========================================================
-
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Panda_Logo.svg/512px-Panda_Logo.svg.png",
-    width=150
-)
-
-st.sidebar.title("🐼 MENÚ")
-
-pagina = st.sidebar.radio(
-    "Seleccione un módulo",
-    [
-        "🏠 Inicio",
-        "📥 Importar datos",
-        "📊 Estadística descriptiva",
-        "📈 Tablas de frecuencia",
-        "📉 Visualización",
-        "🦠 Bioestadística",
-        "🏥 Indicadores de salud",
-        "👥 Demografía",
-        "📉 Canal endémico",
-        "📄 Exportar resultados",
-        "ℹ️ Acerca de"
-    ]
-)
-
-# ==========================================================
-# PÁGINAS
-# ==========================================================
-
-if pagina == "🏠 Inicio":
-
-    st.success("Bienvenido a PANDA STATISTIC LIFE")
-
-    st.info(
-        """
-        Utiliza el menú lateral para acceder a los distintos módulos.
-
-        Próximamente:
-        - Importación automática de reportes SNIS.
-        - Pirámides poblacionales.
-        - Estadística inferencial.
-        - Exportación de reportes.
-        """
-    )
-
-elif pagina == "📥 Importar datos":
-
-    st.header("📥 Importación de datos")
-
-    archivo = st.file_uploader(
-        "Seleccione un archivo",
-        type=["xls", "xlsx", "csv"]
-    )
-
-    st.checkbox(
-        "🇧🇴 Detectar automáticamente formato SNIS",
-        value=True
-    )
-
-    st.checkbox(
-        "Eliminar filas vacías",
-        value=True
-    )
-
-    st.checkbox(
-        "Eliminar columnas vacías",
-        value=True
-    )
-
-    st.checkbox(
-        "Conservar variables categóricas",
-        value=True
-    )
-
-    if archivo is not None:
-        st.success("Archivo cargado correctamente.")
-        st.write("Nombre:", archivo.name)
-
-elif pagina == "📊 Estadística descriptiva":
-
-    st.header("📊 Estadística descriptiva")
-
-    st.warning(
-        "Este módulo se implementará en una siguiente versión."
-    )
-
-elif pagina == "📈 Tablas de frecuencia":
-
-    st.header("📈 Tablas de frecuencia")
-
-    st.warning(
-        "Este módulo se implementará en una siguiente versión."
-    )
-
-elif pagina == "📉 Visualización":
-
-    st.header("📉 Visualización")
-
-    st.warning(
-        "Este módulo se implementará en una siguiente versión."
-    )
-
-elif pagina == "🦠 Bioestadística":
-
-    st.header("🦠 Bioestadística")
-
-    st.write("Incluye cálculos como RR, OR y tablas 2×2.")
-
-elif pagina == "🏥 Indicadores de salud":
-
-    st.header("🏥 Indicadores de salud")
-
-    st.write(
-        "Incidencia, prevalencia, mortalidad y otros indicadores."
-    )
-
-elif pagina == "👥 Demografía":
-
-    st.header("👥 Demografía")
-
-    st.markdown("""
-### Funcionalidades previstas
-
-- Pirámide poblacional.
-- Distribución por edad.
-- Distribución por sexo.
-- Razón de masculinidad.
-- Índice de dependencia.
-- Índice de envejecimiento.
-- Indicadores demográficos.
+Seleccione una opción del menú lateral para comenzar.
 """)
 
-elif pagina == "📉 Canal endémico":
+elif menu=="📥 Importar Datos":
 
-    st.header("📉 Canal endémico")
+    importar.mostrar()
 
-    st.write(
-        "Visualización de zonas de seguridad, normalidad, alarma y epidemia."
-    )
+elif menu=="📊 Estadística Descriptiva":
 
-elif pagina == "📄 Exportar resultados":
+    descriptiva.mostrar()
 
-    st.header("📄 Exportación")
+elif menu=="📈 Frecuencias":
 
-    st.write(
-        "Permite exportar tablas, gráficos e informes."
-    )
+    frecuencias.mostrar()
 
-elif pagina == "ℹ️ Acerca de":
+elif menu=="📉 Visualización":
 
-    st.header("ℹ️ Acerca del proyecto")
+    visualizacion.mostrar()
 
-    st.markdown("""
-**PANDA STATISTIC LIFE**
+elif menu=="🦠 Bioestadística":
 
-Aplicación desarrollada para apoyar la enseñanza, investigación y análisis de datos en salud pública.
+    bioestadistica.mostrar()
 
-Incluye herramientas de:
+elif menu=="🏥 Indicadores":
 
-- Estadística descriptiva.
-- Bioestadística.
-- Epidemiología.
-- Demografía.
-- Vigilancia epidemiológica.
-- Procesamiento de datos del SNIS Bolivia.
-""")
+    indicadores.mostrar()
 
-# ==========================================================
-# FOOTER
-# ==========================================================
+elif menu=="👥 Demografía":
 
-st.markdown("---")
+    demografia.mostrar()
 
-st.caption(
-    "🐼 PANDA STATISTIC LIFE © 2026 | Desarrollado por Omar Paz"
-)
+elif menu=="📉 Canal Endémico":
+
+    canal_endemico.mostrar()
+
+elif menu=="📄 Exportar":
+
+    exportar.mostrar()
