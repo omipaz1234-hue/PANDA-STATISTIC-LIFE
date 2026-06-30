@@ -157,37 +157,6 @@ with st.sidebar:
 
 if menu == "🏠 Inicio":
     inicio.mostrar()
-        
-    st.title("🐼 PANDA STATISTIC LIFE")
-
-    st.subheader("Plataforma Boliviana de Estadística y Vigilancia Epidemiológica")
-
-    st.markdown("---")
-
-    c1,c2,c3=st.columns(3)
-
-    with c1:
-
-        st.metric("Versión","1.0")
-
-    with c2:
-
-        st.metric("País","Bolivia")
-
-    with c3:
-
-        st.metric("Estado","Activo")
-
-    st.markdown("---")
-
-    st.info("""
-Bienvenido a **PANDA STATISTIC LIFE**.
-
-Esta plataforma está orientada al análisis estadístico y epidemiológico
-para apoyar la toma de decisiones en Salud Pública de Bolivia.
-
-Seleccione una opción del menú lateral para comenzar.
-""")
 
 elif menu=="📥 Importar Datos":
 
