@@ -24,6 +24,18 @@ from modules import indicadores
 from modules import demografia
 from modules import canal_endemico
 from modules import exportar
+# ============================
+# CARGAR ESTILOS CSS
+# ============================
+
+def load_css():
+    with open("styles/style.css", encoding="utf-8") as f:
+        st.markdown(
+            f"<style>{f.read()}</style>",
+            unsafe_allow_html=True
+        )
+
+load_css()
 
 # ============================
 # CSS PERSONALIZADO
