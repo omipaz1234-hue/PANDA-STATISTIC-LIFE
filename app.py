@@ -29,9 +29,9 @@ from modules import exportar
 # ============================
 
 def load_css():
-    with open("styles/style.css", encoding="utf-8") as f:
+    with open("styles/styles.css", encoding="utf-8") as f:
         st.markdown(
-            f"<style>{f.read()}</style>",
+            f"<styles>{f.read()}</styles>",
             unsafe_allow_html=True
         )
 
