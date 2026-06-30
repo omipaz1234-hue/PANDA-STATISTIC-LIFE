@@ -24,6 +24,7 @@ from modules import indicadores
 from modules import demografia
 from modules import canal_endemico
 from modules import exportar
+from modules import inicio
 # ============================
 # CARGAR ESTILOS CSS
 # ============================
@@ -166,8 +167,9 @@ with st.sidebar:
 # PÁGINAS
 # ============================
 
-if menu=="🏠 Inicio":
-
+if menu == "🏠 Inicio":
+    inicio.mostrar()
+        
     st.title("🐼 PANDA STATISTIC LIFE")
 
     st.subheader("Plataforma Boliviana de Estadística y Vigilancia Epidemiológica")
