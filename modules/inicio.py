@@ -24,3 +24,22 @@ def mostrar():
         st.image("assets/bolivia.png", width=180)
 
     st.divider()
+c1, c2, c3, c4, c5, c6 = st.columns(6)
+
+with c1:
+    st.button("📊 Estadística", use_container_width=True)
+
+with c2:
+    st.button("🦠 Bioestadística", use_container_width=True)
+
+with c3:
+    st.button("👥 Demografía", use_container_width=True)
+
+with c4:
+    st.button("🛡 Vigilancia", use_container_width=True)
+
+with c5:
+    st.button("🗄 SNIS", use_container_width=True)
+
+with c6:
+    st.button("📈 Canal Endémico", use_container_width=True)
