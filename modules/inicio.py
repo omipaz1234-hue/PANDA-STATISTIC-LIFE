@@ -18,7 +18,7 @@ def mostrar():
         """)
 
     with col3:
-        st.image("assets/bolivia.png", width=220)
+        st.image("assets/bolivia.png", width=170)
 
     st.divider()
 
