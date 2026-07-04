@@ -13,7 +13,7 @@ def mostrar():
     col1, col2, col3 = st.columns([1.3, 3.8, 1.3])
 
     with col1:
-        st.image("assets/panda.png", width=190)
+        st.image("assets/Panda.png", width=190)
 
     with col2:
 
