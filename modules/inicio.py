@@ -7,7 +7,7 @@ def mostrar():
     col1, col2, col3 = st.columns([1.2, 3, 1.4])
 
     with col1:
-        st.image("assets/panda.png", width=500)
+        st.image("assets/panda.png", width=600)
 
     with col2:
         st.markdown("""
