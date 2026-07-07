@@ -36,6 +36,7 @@ Para generar un Canal Endémico se requiere:
                 df = pd.read_excel(archivo)
 
             st.success("✅ Archivo cargado correctamente")
+
             # ============================
             # VALIDAR COLUMNAS
             # ============================
@@ -49,21 +50,21 @@ Para generar un Canal Endémico se requiere:
             faltantes = []
 
             for col in columnas_requeridas:
-            if col not in df.columns:
-                faltantes.append(col)
+                if col not in df.columns:
+                    faltantes.append(col)
 
             if faltantes:
 
-            st.error("❌ Faltan las siguientes columnas:")
+                st.error("❌ Faltan las siguientes columnas:")
 
-            for col in faltantes:
-                st.write(f"• {col}")
+                for col in faltantes:
+                    st.write(f"• {col}")
 
                 st.stop()
 
-else:
+            else:
 
-    st.success("✅ El archivo cumple con la estructura requerida.")
+                st.success("✅ El archivo cumple con la estructura requerida.")
 
             st.write("### Vista previa")
 
@@ -80,8 +81,10 @@ else:
                 st.metric("Columnas", len(df.columns))
 
             with c3:
-                st.metric("Años encontrados",
-                          df["Año"].nunique() if "Año" in df.columns else 0)
+                st.metric(
+                    "Años encontrados",
+                    df["Año"].nunique() if "Año" in df.columns else 0
+                )
 
             st.divider()
 
