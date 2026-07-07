@@ -1,228 +1,66 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-
-
-# ==========================================================
-# MÉTODO MEDIA ± DE
-# ==========================================================
-
-def canal_media_desviacion(datos):
-
-    media = datos.mean()
-
-    de = datos.std()
-
-    return media, de
-
-
-# ==========================================================
-# MÉTODO CUARTILES
-# ==========================================================
-
-def canal_cuartiles(datos):
-
-    q1 = datos.quantile(0.25)
-
-    q2 = datos.quantile(0.50)
-
-    q3 = datos.quantile(0.75)
-
-    return q1, q2, q3
-
-
-# ==========================================================
-# MÉTODO PERCENTILES
-# ==========================================================
-
-def canal_percentiles(datos):
-
-    p25 = np.percentile(datos,25)
-
-    p50 = np.percentile(datos,50)
-
-    p75 = np.percentile(datos,75)
-
-    return p25,p50,p75
-
-
-# ==========================================================
-# INTERFAZ
-# ==========================================================
 
 def mostrar():
 
-    st.title("📉 Canal Endémico")
+    st.title("📈 Canal Endémico")
 
-    if "df" not in st.session_state:
+    st.markdown("""
+    Construya el Canal Endémico utilizando un archivo histórico independiente.
+    """)
 
-        st.warning("Primero importa un archivo.")
+    st.info("""
+Para generar un Canal Endémico se requiere:
 
-        return
+✅ Cinco años históricos
 
-    df = st.session_state["df"]
+✅ Año actual
 
-    numericas = df.select_dtypes(include=np.number).columns.tolist()
+✅ Semana Epidemiológica
 
-    if len(numericas)==0:
+✅ Número de casos
+""")
 
-        st.error("No existen variables numéricas.")
-
-        return
-
-    columna = st.selectbox(
-
-        "Selecciona la variable",
-
-        numericas
-
+    archivo = st.file_uploader(
+        "Seleccione el archivo histórico",
+        type=["xlsx", "xls", "csv"]
     )
 
-    metodo = st.selectbox(
+    if archivo is not None:
 
-        "Método",
+        try:
 
-        [
+            if archivo.name.endswith(".csv"):
+                df = pd.read_csv(archivo)
+            else:
+                df = pd.read_excel(archivo)
 
-            "Media ± DE",
+            st.success("✅ Archivo cargado correctamente")
 
-            "Cuartiles",
+            st.write("### Vista previa")
 
-            "Percentiles"
+            st.dataframe(df.head())
 
-        ]
+            st.write("### Información")
 
-    )
+            c1, c2, c3 = st.columns(3)
 
-    datos = df[columna].dropna()
+            with c1:
+                st.metric("Filas", len(df))
 
-    fig = go.Figure()
+            with c2:
+                st.metric("Columnas", len(df.columns))
 
-    if metodo=="Media ± DE":
+            with c3:
+                st.metric("Años encontrados",
+                          df["Año"].nunique() if "Año" in df.columns else 0)
 
-        media,de = canal_media_desviacion(datos)
+            st.divider()
 
-        fig.add_hrect(
-            y0=0,
-            y1=max(0,media-de),
-            fillcolor="green",
-            opacity=0.20
-        )
+            if st.button("📈 Generar Canal Endémico"):
 
-        fig.add_hrect(
-            y0=max(0,media-de),
-            y1=media+de,
-            fillcolor="lightblue",
-            opacity=0.25
-        )
+                st.warning("Aquí construiremos el Canal Endémico en la versión 2.")
 
-        fig.add_hrect(
-            y0=media+de,
-            y1=media+2*de,
-            fillcolor="orange",
-            opacity=0.25
-        )
+        except Exception as e:
 
-        fig.add_hrect(
-            y0=media+2*de,
-            y1=max(datos)*1.10,
-            fillcolor="red",
-            opacity=0.25
-        )
-
-        fig.add_trace(
-
-            go.Scatter(
-
-                x=df.index,
-
-                y=datos,
-
-                mode="lines+markers",
-
-                name="Casos"
-
-            )
-
-        )
-
-        fig.add_trace(
-
-            go.Scatter(
-
-                x=df.index,
-
-                y=[media]*len(datos),
-
-                mode="lines",
-
-                name="Media"
-
-            )
-
-        )
-
-        st.success(f"Media = {media:.2f}")
-
-        st.success(f"Desviación = {de:.2f}")
-
-    elif metodo=="Cuartiles":
-
-        q1,q2,q3 = canal_cuartiles(datos)
-
-        st.metric("Q1",f"{q1:.2f}")
-
-        st.metric("Q2",f"{q2:.2f}")
-
-        st.metric("Q3",f"{q3:.2f}")
-
-        fig.add_trace(
-
-            go.Box(
-
-                y=datos,
-
-                name="Cuartiles"
-
-            )
-
-        )
-
-    else:
-
-        p25,p50,p75 = canal_percentiles(datos)
-
-        st.metric("P25",f"{p25:.2f}")
-
-        st.metric("P50",f"{p50:.2f}")
-
-        st.metric("P75",f"{p75:.2f}")
-
-        fig.add_trace(
-
-            go.Box(
-
-                y=datos,
-
-                name="Percentiles"
-
-            )
-
-        )
-
-    fig.update_layout(
-
-        height=700,
-
-        title="Canal Endémico"
-
-    )
-
-    st.plotly_chart(
-
-        fig,
-
-        use_container_width=True
-
-    )
+            st.error(e)
