@@ -36,30 +36,30 @@ Para generar un Canal Endémico se requiere:
                 df = pd.read_excel(archivo)
 
             st.success("✅ Archivo cargado correctamente")
-# ============================
-# VALIDAR COLUMNAS
-# ============================
+            # ============================
+            # VALIDAR COLUMNAS
+            # ============================
 
-columnas_requeridas = [
-    "Año",
-    "Semana",
-    "Casos"
-]
+            columnas_requeridas = [
+                "Año",
+                "Semana",
+                "Casos"
+            ]
 
-faltantes = []
+            faltantes = []
 
-for col in columnas_requeridas:
-    if col not in df.columns:
-        faltantes.append(col)
+            for col in columnas_requeridas:
+            if col not in df.columns:
+                faltantes.append(col)
 
-if faltantes:
+            if faltantes:
 
-    st.error("❌ Faltan las siguientes columnas:")
+            st.error("❌ Faltan las siguientes columnas:")
 
-    for col in faltantes:
-        st.write(f"• {col}")
+            for col in faltantes:
+                st.write(f"• {col}")
 
-    st.stop()
+                st.stop()
 
 else:
 
